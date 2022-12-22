@@ -20,22 +20,29 @@ export default function Map() {
   })
 
   const topic = "server-topic"
-  useEffect(() => {
-    socket.on(topic, (data) => {
-      const result = fetch("http://localhost:6001/logs/coords")
-      .then(res => res.json())
-      .then((res) => {
-          // setCoords(res)
-          setPosition(res[0])
-          setPolyline(res)
-        })
-    });
-    navigator.geolocation.getCurrentPosition(function(position) {
-      // setCurrent([position.coords.latitude,position.coords.longitude])
-      // console.log("Latitude is :", position.coords.latitude);
-      // console.log("Longitude is :", position.coords.longitude);
-    })
-  }, [topic, socket]);
+  const result = fetch("http://localhost:6001/logs/coords")
+  .then(res => res.json())
+  .then((res) => {
+    // setCoords(res)
+    setPosition(res[0])
+    setPolyline(res)
+  })
+  // useEffect(() => {
+  //   socket.on(topic, (data) => {
+  //     const result = fetch("http://localhost:6001/logs/coords")
+  //     .then(res => res.json())
+  //     .then((res) => {
+  //         // setCoords(res)
+  //         setPosition(res[0])
+  //         setPolyline(res)
+  //       })
+  //   });
+  //   navigator.geolocation.getCurrentPosition(function(position) {
+  //     // setCurrent([position.coords.latitude,position.coords.longitude])
+  //     // console.log("Latitude is :", position.coords.latitude);
+  //     // console.log("Longitude is :", position.coords.longitude);
+  //   })
+  // }, [topic, socket]);
 
   return (
     <div>
