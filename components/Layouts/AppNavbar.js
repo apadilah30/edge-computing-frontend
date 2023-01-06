@@ -7,7 +7,7 @@ export default function AppNavbar () {
             <Navbar.Brand>
             <Logo />
             <Text color="inherit" hideIn="xs">
-                Monitoring Realtime
+                IoT - Edge Computing
             </Text>
             </Navbar.Brand>
             <Navbar.Content>

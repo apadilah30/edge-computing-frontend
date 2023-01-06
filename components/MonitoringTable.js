@@ -19,7 +19,7 @@ export default function MonitoringTable({data}) {
         }}
         >
         <Table.Header>
-            {/* <Table.Column>Time</Table.Column> */}
+            <Table.Column>Time</Table.Column>
             <Table.Column>ID</Table.Column>
             <Table.Column>Latitude</Table.Column>
             <Table.Column>Longitude</Table.Column>
@@ -42,13 +42,19 @@ export default function MonitoringTable({data}) {
             <Table.Column>Rh(%)</Table.Column>
             <Table.Column>Light(%)</Table.Column>
             <Table.Column>VBat(V)</Table.Column>
+            <Table.Column>RSSI</Table.Column>
+            <Table.Column>CPU(Hz)</Table.Column>
+            <Table.Column>RAM(kb)</Table.Column>
+            <Table.Column>ROM(kb)</Table.Column>
+            <Table.Column>SNR</Table.Column>
             <Table.Column>Tail</Table.Column>
         </Table.Header>
         <Table.Body>
             {/* <Table.Cell>{moment(new Date(item.time)).format("YYYY-MM-DD HH:mm:ss")}</Table.Cell> */}
         { message !== null && message.length > 0 && message.map((item, index) => (
             <Table.Row key={index}>
-                <Table.Cell>{item.id}</Table.Cell>
+                <Table.Cell>{item.timestamp}</Table.Cell>
+                <Table.Cell>{item.uuid}</Table.Cell>
                 <Table.Cell>{item.lat}</Table.Cell>
                 <Table.Cell>{item.lng}</Table.Cell>
                 <Table.Cell>{item.alt}</Table.Cell>
@@ -70,6 +76,11 @@ export default function MonitoringTable({data}) {
                 <Table.Cell>{item.rh}</Table.Cell>
                 <Table.Cell>{item.cahaya}</Table.Cell>
                 <Table.Cell>{item.vbat}</Table.Cell>
+                <Table.Cell>{item.rssi}</Table.Cell>
+                <Table.Cell>{item.cpu}</Table.Cell>
+                <Table.Cell>{item.ram}</Table.Cell>
+                <Table.Cell>{item.rom}</Table.Cell>
+                <Table.Cell>{item.snr}</Table.Cell>
                 <Table.Cell>{item.tail}</Table.Cell>
             </Table.Row>
         )) }
