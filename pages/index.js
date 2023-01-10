@@ -45,10 +45,24 @@ const sampleCategories = [
 export default function Home() {
   // States
   const [message, setMessage] = useState([])
-  const [logUrl, setLogUrl] = useState('http://localhost:6001')
+  const [logUrl, setLogUrl] = useState('http://192.168.1.32:6001')
   const [devices, setDevices] = useState([])
-  const [cpuSeries, setCpuSeries] = useState(sampleSeries)
-  const [cpuCategories, setCpuCategories] = useState(sampleCategories)
+  const [specification, setSpecification] = useState([])
+  const [selectedDevice, setSelectedDevice] = useState("all")
+  const [chartSeries, setChartSeries] = useState({
+    cpu : sampleSeries,
+    ram : sampleSeries,
+    rom : sampleSeries,
+    rssi : sampleSeries,
+    battery : sampleSeries
+  })
+  const [chartCategories, setChartCategories] = useState({
+    cpu : sampleCategories,
+    ram : sampleCategories,
+    rom : sampleCategories,
+    rssi : sampleCategories,
+    battery : sampleCategories
+  })
 
   // Mapping
   const MapWithNoSSR = dynamic(() => import("../components/Map"), {
@@ -78,40 +92,74 @@ export default function Home() {
   )
 
   // Websockets
-  const socket = io("http://localhost:6001", {
-    withCredentials: true,
-    transports: ["websocket"]
-  })
-  const topic = "server-topic"
   useEffect(() => {
-    socket.on(topic, (data) => {
-        setMessage(data)
-        console.log(data)
-    });
-  }, [topic, socket]);
+    const socket = io("http://192.168.1.32:6001", {
+      withCredentials: true,
+      transports: ["websocket"]
+    })
+    socket.connect()
+    const topic = "server-topic"
+    // socket.on(topic, (value) => {
+    //     let data = value;
+    //     // if(selectedDevice != 'all'){
+    //     //   data = value.filter(x => x.uuid == selectedDevice)
+    //     // }
+    //     setMessage(data)
+    //     setChartSeries({
+    //       cpu : data.map(x => x.cpu),
+    //       ram : data.map(x => x.ram),
+    //       rom : data.map(x => x.rom),
+    //       rssi : data.map(x => x.rssi),
+    //       battery : data.map(x => x.vbat)
+    //     })
+    //     setChartCategories({
+    //       cpu : data.map(x => x.timestamp),
+    //       ram : data.map(x => x.timestamp),
+    //       rom : data.map(x => x.timestamp),
+    //       rssi : data.map(x => x.timestamp),
+    //       battery : data.map(x => x.timestamp)
+    //     })
+    //     // console.log(data)
+    // });
+  }, []);
 
   // Initialize Data
-  fetch(logUrl+"/logs")
+  fetch(logUrl+"/logs?id="+selectedDevice)
     .then((res) => res.json())  
-    .then((data) => {
+    .then((value) => {
+      let data = value;
+      let series = {
+        cpu : data.map(x => x.cpu),
+        ram : data.map(x => x.ram),
+        rom : data.map(x => x.rom),
+        rssi : data.map(x => x.rssi),
+        battery : data.map(x => x.vbat)
+      }
+      let categories = {
+        cpu : data.map(x => x.timestamp),
+        ram : data.map(x => x.timestamp),
+        rom : data.map(x => x.timestamp),
+        rssi : data.map(x => x.timestamp),
+        battery : data.map(x => x.timestamp)
+      }
       setMessage(data)
+      setChartSeries(series)
+      setChartCategories(categories)
     })
 
-  function filterLogs(id) {
-    fetch(logUrl+"/logs")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data)
-        setMessage(data)
-      })
-  }
 
   // Devices
   fetch(logUrl+"/devices")
     .then((res) => res.json())
     .then((data) => {
-      console.log(data)
       setDevices(data)
+    })
+
+  // Device Specification
+  fetch(logUrl+"/api/server-status")
+    .then((res) => res.json())
+    .then((data) => {
+      setSpecification(data)
     })
 
 
@@ -139,21 +187,26 @@ export default function Home() {
                 <Grid xs={5}>
                   <Card variant="flat" css={{padding: ".5rem"}}>
                     <Text b h6>Spesifikasi</Text>
-                    <Text>CPU : Intel(R) Celeron(R) CPU N3350 @ 1.1GHz (CPUs)</Text>
-                    <Text>RAM : 6144MB</Text>
-                    <Text>ROM : 222GB</Text>
+                    <Text>CPU : {specification?.specification?.cpu}</Text>
+                    <Text>Cores : {specification?.specification?.cpu_count}</Text>
+                    <Text>Platform : {specification?.specification?.cpu_count}</Text>
+
+                    <Text>Memory (RAM)</Text>
+                    <Text>Total : {parseFloat(parseInt(specification?.statistics?.total_ram)/ (1000*1000)).toFixed(2)} MB</Text>
+                    <Text>Used : {parseFloat(parseFloat(parseInt(specification?.statistics?.total_ram)/ (1000*1000)).toFixed(2)-parseFloat(parseInt(specification?.statistics?.free_ram)/ (1000*1000)).toFixed(2)).toFixed(2)} MB</Text>
+                    <Text>Free : {parseFloat(parseInt(specification?.statistics?.free_ram)/ (1000*1000)).toFixed(2)} MB</Text>
                   </Card>
                 </Grid>
                 <Grid xs={7}>
                   <Grid.Container gap={2}>
                     <Grid xs={6}>
-                      <GaugeChart name="CPU (%)" series="60" height="160"/>
+                      <GaugeChart name="CPU (%)" series={parseInt(specification?.statistics?.cpu_percent)} height="160"/>
                     </Grid>
                     <Grid xs={6}>
-                      <GaugeChart name="RAM (%)" series="45" height="160"/>
+                      <GaugeChart name="RAM (%)" series={parseInt(specification?.statistics?.ram_percent)} height="160"/>
                     </Grid>
                     <Grid xs={6}>
-                      <GaugeChart name="Bandwidth (%)" series="40" height="160"/>
+                      <GaugeChart name="Bandwidth (%)" series="48" height="160"/>
                     </Grid>
                     <Grid xs={6}>
                       <GaugeChart name="Battery (%)" series="40" height="160"/>
@@ -176,26 +229,26 @@ export default function Home() {
                   <Text h4 css={{textAlign: "center"}}>Statistik IoT Node dalam jaringan </Text>
                 </Grid>
                 <Grid xs={6} justify="flex-end">
-                  <Link href="/devices">
+                  {/* <Link href="/devices">
                     <Button bordered color="primary">Data IoT Nodes</Button>
-                  </Link>
+                  </Link> */}
                 </Grid>
               </Grid.Container>
               <Grid.Container gap={2}>
                 <Grid xs>
-                  <LineChart series={cpuSeries} height="200" categories={cpuCategories} name="CPU (Mhz)"/>
+                  <LineChart series={chartSeries?.cpu} height="200" categories={chartCategories?.cpu} name="CPU (Mhz)"/>
                 </Grid>
                 <Grid xs>
-                  <LineChart series={cpuSeries} height="200" categories={cpuCategories} name="RAM (Kb)"/>
+                  <LineChart series={chartSeries?.ram} height="200" categories={chartCategories?.ram} name="RAM (Kb)"/>
                 </Grid>
                 <Grid xs>
-                  <LineChart series={cpuSeries} height="200" categories={cpuCategories} name="ROM (Kb)"/>
+                  <LineChart series={chartSeries?.rom} height="200" categories={chartCategories?.rom} name="ROM (Kb)"/>
                 </Grid>
                 <Grid xs>
-                  <LineChart series={cpuSeries} height="200" categories={cpuCategories} name="RSSI (dBm)"/>
+                  <LineChart series={chartSeries?.rssi} height="200" categories={chartCategories?.rssi} name="RSSI (dBm)"/>
                 </Grid>
                 <Grid xs>
-                  <LineChart series={cpuSeries} height="200" categories={cpuCategories} name="Battery (V)"/>
+                  <LineChart series={chartSeries?.battery} height="200" categories={chartCategories?.battery} name="Battery (V)"/>
                 </Grid>
               </Grid.Container>
             </Card>
@@ -204,11 +257,11 @@ export default function Home() {
         <Grid.Container gap={2}>
           <Grid xs>
             <Radio.Group size="sm" orientation="horizontal" label="Filter" defaultValue={devices[0]?.name} >
-              <Radio value="all" color="primary" size="sm" onClick={filterLogs("all")} selected>
+              <Radio value="all" color="primary" size="sm" onClick={() => setSelectedDevice("all")} selected>
                 Semua
               </Radio>
               {devices?.map((item, index) => (
-              <Radio value={item.name} color="primary" size="sm" onClick={filterLogs(item.name)}>
+              <Radio value={item.name} color="primary" size="sm" onClick={() => setSelectedDevice(item.name)}>
                 {item.name}
               </Radio>
               ))}
@@ -217,7 +270,7 @@ export default function Home() {
           <Grid xs={3}>
           </Grid>
           <Grid xs justify="flex-end">
-            <Link href="http://localhost:6001/logs/downloadExcel" alignContent='flex-end'>
+            <Link href="http://192.168.1.32:6001/logs/downloadExcel" alignContent='flex-end'>
               <Button bordered color="success" auto>
                 Export Excel
               </Button>

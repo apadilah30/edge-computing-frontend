@@ -15,29 +15,32 @@ const getColor = d => {
     ? "#00e396"
     : d == "MESHEDGE012303"
     ? "#feb019"
+    : d == "Nodes"
+    ? "#ff0"
     : "#ff0401";
 };
 
 export default function Map() {
   const [map, setMap] = useState(null)
-  const [logUrl, setLogUrl] = useState('http://localhost:6001')
+  const [logUrl, setLogUrl] = useState('http://192.168.1.32:6001')
   const [position, setPosition] = useState([-6.967744833,107.659035833])
   const [devices, setDevices] = useState([])
   // const [current, setCurrent] = useState([-6.967744833,107.659035833])
   const [polyline, setPolyline] = useState([])
   
-  const socket = io("http://localhost:6001", {
+  const socket = io("http://192.168.1.32:6001", {
     withCredentials: true,
     transports: ["websocket"]
   })
 
   const topic = "server-topic"
-  const result = fetch("http://localhost:6001/logs/coords")
+  const result = fetch("http://192.168.1.32:6001/logs/coords")
                   .then(res => res.json())
                   .then((res) => {
                     // setCoords(res)
                     setPosition(res[0])
                     setPolyline(res)
+                    console.log(res)
                   })
                   
   
@@ -45,7 +48,6 @@ export default function Map() {
   fetch(logUrl+"/devices")
     .then((res) => res.json())
     .then((data) => {
-      console.log(data)
       setDevices(data)
     })
  
@@ -70,16 +72,16 @@ export default function Map() {
         { polyline !== null && polyline.length > 0 && polyline.filter((item) => item.data.length > 0)?.map((item, index) => (
           <>
             <Polyline color={getColor(item.name)} positions={item.data} />
-            <CircleMarker center={item.data[0]} radius={5} color={getColor(item.name)} fillColor="blue">
+            <CircleMarker center={item.data[0]} radius={5} color="#ff0" fillColor="#000">
               <Popup >
                 ID : {item.name} <br/>
-                Lat : {item.data[0].lat} <br/>
-                Lng : {item.data[0].lng} <br/>
-                RSSI  : -70 dBm <br/>
-                SNR : 9.25 <br/>
-                CPU : 100% <br/>
-                RAM : 7% <br/>
-                ROM : 18% <br/>
+                Lat : {item.data[item.data.length-1].lat} <br/>
+                Lng : {item.data[item.data.length-1].lng} <br/>
+                RSSI  : {item.data[item.data.length-1].rssi} dBm <br/>
+                SNR : {item.data[item.data.length-1].snr} <br/>
+                CPU : {item.data[item.data.length-1].cpu}% <br/>
+                RAM : {item.data[item.data.length-1].ram}% <br/>
+                ROM : {item.data[item.data.length-1].rom}% <br/>
               </Popup>
             </CircleMarker>
             {/* <Marker position={item.data[0]}>
@@ -97,6 +99,13 @@ export default function Map() {
                   background: getColor("EDGE-SERVER"),
                   width: "100%"
                 }}>EDGE-SERVER</Badge>
+              </Text>
+              <Text>
+                <Badge isSquared css={{
+                  background: getColor("Nodes"),
+                  width: "100%",
+                  color: "#011000"
+                }}>Nodes Position</Badge>
               </Text>
               { devices !== null && devices.length > 0 && devices.map((item, index) => (
                 <>
