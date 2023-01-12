@@ -124,35 +124,59 @@ export default function Home() {
   }, []);
 
   // Initialize Data
-  fetch(logUrl+"/logs?id="+selectedDevice)
-    .then((res) => res.json())  
-    .then((value) => {
-      let data = value;
-      let series = {
-        cpu : data.map(x => x.cpu),
-        ram : data.map(x => x.ram),
-        rom : data.map(x => x.rom),
-        rssi : data.map(x => x.rssi),
-        battery : data.map(x => x.vbat)
-      }
-      let categories = {
-        cpu : data.map(x => x.timestamp),
-        ram : data.map(x => x.timestamp),
-        rom : data.map(x => x.timestamp),
-        rssi : data.map(x => x.timestamp),
-        battery : data.map(x => x.timestamp)
-      }
-      setMessage(data)
-      setChartSeries(series)
-      setChartCategories(categories)
-    })
+  function loadLogs(id){
+    fetch(logUrl+"/logs?id="+id)
+      .then((res) => res.json())  
+      .then((value) => {
+        setMessage(value)
+      })
+  }
 
+  loadLogs(selectedDevice)
 
   // Devices
   fetch(logUrl+"/devices")
     .then((res) => res.json())
     .then((data) => {
-      setDevices(data)
+      let result = []
+      data.forEach(element => {
+        fetch(logUrl+"/logs?id="+element.name)
+          .then((res) => res.json())  
+          .then((data) => {
+            let cpuSeriesTemp = [{
+                  name: element.name,
+                  data: data.map(x => x.cpu)
+                }],
+                ramSeriesTemp = [{
+                  name: element.name,
+                  data: data.map(x => x.ram)
+                }],
+                romSeriesTemp = [{
+                  name: element.name,
+                  data: data.map(x => x.rom)
+                }],
+                rssiSeriesTemp = [{
+                  name: element.name,
+                  data: data.map(x => x.rssi)
+                }],
+                batterySeriesTemp = [{
+                  name: element.name,
+                  data: data.map(x => x.vbat)
+                }]
+
+            result.push({...element,...{chart: {
+              cpu : cpuSeriesTemp,
+              ram : ramSeriesTemp,
+              rom : romSeriesTemp,
+              rssi : rssiSeriesTemp,
+              battery : batterySeriesTemp,
+              datetime : data.map(x => x.timestamp)
+            }}})
+          })
+          .finally(() => {
+            setDevices(result)
+          })
+      });
     })
 
   // Device Specification
@@ -229,39 +253,56 @@ export default function Home() {
                   <Text h4 css={{textAlign: "center"}}>Statistik IoT Node dalam jaringan </Text>
                 </Grid>
                 <Grid xs={6} justify="flex-end">
-                  {/* <Link href="/devices">
+                  <Link href="/devices">
                     <Button bordered color="primary">Data IoT Nodes</Button>
-                  </Link> */}
-                </Grid>
-              </Grid.Container>
-              <Grid.Container gap={2}>
-                <Grid xs>
-                  <LineChart series={chartSeries?.cpu} height="200" categories={chartCategories?.cpu} name="CPU (Mhz)"/>
-                </Grid>
-                <Grid xs>
-                  <LineChart series={chartSeries?.ram} height="200" categories={chartCategories?.ram} name="RAM (Kb)"/>
-                </Grid>
-                <Grid xs>
-                  <LineChart series={chartSeries?.rom} height="200" categories={chartCategories?.rom} name="ROM (Kb)"/>
-                </Grid>
-                <Grid xs>
-                  <LineChart series={chartSeries?.rssi} height="200" categories={chartCategories?.rssi} name="RSSI (dBm)"/>
-                </Grid>
-                <Grid xs>
-                  <LineChart series={chartSeries?.battery} height="200" categories={chartCategories?.battery} name="Battery (V)"/>
+                  </Link>
                 </Grid>
               </Grid.Container>
             </Card>
         </Grid.Container>
+        { devices !== null && devices.length > 0 && devices.map((item, index) => (
+          <Grid.Container gap={2}>
+              <Card css={{
+                padding: ".5rem",
+                marginBottom: ".5rem"
+              }}>
+                <Text h6 b>Device ID : {item.name}</Text>
+                <Grid.Container gap={2}>
+                  <Grid xs>
+                    <LineChart series={item.chart?.cpu} height="200" categories={item.chart?.datetime} name="CPU (Mhz)"/>
+                  </Grid>
+                  <Grid xs>
+                    <LineChart series={item.chart?.ram} height="200" categories={item.chart?.datetime} name="RAM (Kb)"/>
+                  </Grid>
+                  <Grid xs>
+                    <LineChart series={item.chart?.rom} height="200" categories={item.chart?.datetime} name="ROM (Kb)"/>
+                  </Grid>
+                  <Grid xs>
+                    <LineChart series={item.chart?.rssi} height="200" categories={item.chart?.datetime} name="RSSI (dBm)"/>
+                  </Grid>
+                  <Grid xs>
+                    <LineChart series={item.chart?.battery} height="200" categories={item.chart?.datetime} name="Battery (V)"/>
+                  </Grid>
+                </Grid.Container>
+              </Card>
+          </Grid.Container>
+        ))}
         <Spacer y={1} />
         <Grid.Container gap={2}>
           <Grid xs>
-            <Radio.Group size="sm" orientation="horizontal" label="Filter" defaultValue={devices[0]?.name} >
-              <Radio value="all" color="primary" size="sm" onClick={() => setSelectedDevice("all")} selected>
+            <Radio.Group 
+              size="sm" 
+              orientation="horizontal" 
+              label="Filter"
+              defaultValue="all" 
+              value={selectedDevice}
+              onChange={setSelectedDevice}
+              >
+              <Radio value="all" color="primary" size="sm">
                 Semua
               </Radio>
               {devices?.map((item, index) => (
-              <Radio value={item.name} color="primary" size="sm" onClick={() => setSelectedDevice(item.name)}>
+              <Radio value={item.name} color="primary" size="sm">
                 {item.name}
               </Radio>
               ))}

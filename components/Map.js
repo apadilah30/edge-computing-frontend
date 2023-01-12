@@ -22,25 +22,24 @@ const getColor = d => {
 
 export default function Map() {
   const [map, setMap] = useState(null)
-  const [logUrl, setLogUrl] = useState('http://192.168.1.32:6001')
+  const [logUrl, setLogUrl] = useState('http://localhost:6001')
   const [position, setPosition] = useState([-6.967744833,107.659035833])
   const [devices, setDevices] = useState([])
   // const [current, setCurrent] = useState([-6.967744833,107.659035833])
   const [polyline, setPolyline] = useState([])
   
-  const socket = io("http://192.168.1.32:6001", {
+  const socket = io("http://localhost:6001", {
     withCredentials: true,
     transports: ["websocket"]
   })
 
   const topic = "server-topic"
-  const result = fetch("http://192.168.1.32:6001/logs/coords")
+  const result = fetch("http://localhost:6001/logs/coords")
                   .then(res => res.json())
                   .then((res) => {
                     // setCoords(res)
                     setPosition(res[0])
                     setPolyline(res)
-                    console.log(res)
                   })
                   
   

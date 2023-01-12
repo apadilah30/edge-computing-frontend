@@ -37,7 +37,33 @@ export default function LineChart({series, height, categories, name}) {
           xaxis: {
             // type: 'category',
             type: 'datetime',
-            categories: categories
+            categories: categories,
+            labels: {
+                datetimeUTC: false
+            },
+            title: {
+              text: "Datetime",
+              offsetX: 0,
+              offsetY: 80,
+              style: {
+                fontWeight: 400,
+                fontSize: '10px'
+              }
+            },
+          },
+          yaxis: {
+            labels: {
+              formatter: function(val, index) {
+                return val.toFixed(2);
+              }
+            },
+            title: {
+              text: name,
+              style: {
+                fontWeight: 400,
+                fontSize: '10px'
+              }
+            },
           },
           tooltip: {
             x: {
