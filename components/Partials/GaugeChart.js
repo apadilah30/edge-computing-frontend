@@ -5,6 +5,14 @@ const ReactApexChart = dynamic(()=> import('react-apexcharts'), {
 })
 
 export default function GaugeChart({name, series, height}) {
+  let colors = ""
+  if(series <= 100 && series >=75){
+    colors = "#fe5f76"
+  } else if(series < 75 && series >=50) {
+    colors = "#fdba3a"
+  } else if(series < 50) {
+    colors = "#25e6a4"
+  }
   const options = {
     series: [series],
     options: {
@@ -15,35 +23,25 @@ export default function GaugeChart({name, series, height}) {
           show: false
         }
       },
+      colors: [colors],
       plotOptions: {
         radialBar: {
           startAngle: -180,
           endAngle: 180,
-           hollow: {
+          hollow: {
             margin: 0,
             size: '65%',
             background: '#fff',
             imageOffsetX: 0,
             imageOffsetY: 0,
             position: 'front',
-            dropShadow: {
-              enabled: true,
-              top: 3,
-              left: 0,
-              blur: 4,
-              opacity: 0.24
-            }
           },
           track: {
-            background: '#fff',
-            strokeWidth: '60%',
+            background: 'red',
+            strokeWidth: '80%',
             margin: 0, // margin is in pixels
             dropShadow: {
-              enabled: true,
-              top: -3,
-              left: 0,
-              blur: 4,
-              opacity: 0.35
+              enabled: true
             }
           },
       
@@ -66,19 +64,6 @@ export default function GaugeChart({name, series, height}) {
             }
           }
         }
-      },
-      fill: {
-        // type: 'gradient',
-        // gradient: {
-        //   shade: 'dark',
-        //   type: 'horizontal',
-        //   shadeIntensity: 0.5,
-        //   gradientToColors: ['#ABE5A1'],
-        //   inverseColors: true,
-        //   opacityFrom: 1,
-        //   opacityTo: 1,
-        //   stops: [0, 100]
-        // }
       },
       stroke: {
         lineCap: 'round'

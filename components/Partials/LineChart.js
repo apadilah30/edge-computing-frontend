@@ -44,7 +44,7 @@ export default function LineChart({series, height, categories, name}) {
             title: {
               text: "Datetime",
               offsetX: 0,
-              offsetY: 80,
+              offsetY: 60,
               style: {
                 fontWeight: 400,
                 fontSize: '10px'

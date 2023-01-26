@@ -21,6 +21,7 @@ import {
 import {Bar, Line, Scatter, Bubble} from "react-chartjs-2"
 import GaugeChart from "../components/Partials/GaugeChart"
 import LineChart from '../components/Partials/LineChart'
+import { RiDonutChartFill } from 'react-icons/ri';
 
 const sampleSeries = [
   {
@@ -45,7 +46,7 @@ const sampleCategories = [
 export default function Home() {
   // States
   const [message, setMessage] = useState([])
-  const [logUrl, setLogUrl] = useState('http://192.168.1.32:6001')
+  const [logUrl, setLogUrl] = useState('http://localhost:6001')
   const [devices, setDevices] = useState([])
   const [specification, setSpecification] = useState([])
   const [selectedDevice, setSelectedDevice] = useState("all")
@@ -63,6 +64,27 @@ export default function Home() {
     rssi : sampleCategories,
     battery : sampleCategories
   })
+
+  const RadialLegends = () => {
+    return (
+      <Container css={{
+        display: "flex",
+        direction: "row",
+        width: "100%",
+        justifyContent: "space-between"
+      }}>
+        <Text>
+          <RiDonutChartFill /> A
+        </Text>
+        <Text>
+          B
+        </Text>
+        <Text>
+          C
+        </Text>
+      </Container>
+    )
+  }
 
   // Mapping
   const MapWithNoSSR = dynamic(() => import("../components/Map"), {
@@ -93,7 +115,7 @@ export default function Home() {
 
   // Websockets
   useEffect(() => {
-    const socket = io("http://192.168.1.32:6001", {
+    const socket = io("http://localhost:6001", {
       withCredentials: true,
       transports: ["websocket"]
     })
@@ -178,6 +200,7 @@ export default function Home() {
           })
       });
     })
+  
 
   // Device Specification
   fetch(logUrl+"/api/server-status")
@@ -234,6 +257,9 @@ export default function Home() {
                     </Grid>
                     <Grid xs={6}>
                       <GaugeChart name="Battery (%)" series="40" height="160"/>
+                    </Grid>
+                    <Grid xs={12}>
+                      <RadialLegends />
                     </Grid>
                   </Grid.Container>
                 </Grid>
@@ -311,7 +337,7 @@ export default function Home() {
           <Grid xs={3}>
           </Grid>
           <Grid xs justify="flex-end">
-            <Link href="http://192.168.1.32:6001/logs/downloadExcel" alignContent='flex-end'>
+            <Link href="http://localhost:6001/logs/downloadExcel">
               <Button bordered color="success" auto>
                 Export Excel
               </Button>
